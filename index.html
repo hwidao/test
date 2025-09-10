@@ -116,7 +116,7 @@
 
     let currentYear, currentMonth;
     let selectedDate = null;
-    let notes = {}; // { "dateString": "note text" }
+    let notes = {}; // { "YYYY-MM-DD": "note text" }
 
     const monthYearElem = document.getElementById("month-year");
     const calendarElem = document.getElementById("calendar");
@@ -143,12 +143,16 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
+    // 날짜를 YYYY-MM-DD 문자열로 변환하는 함수
+    function formatDateKey(date) {
+      return date.toISOString().slice(0, 10);
+    }
+
     // Realtime DB에서 모든 메모 불러오기
     function loadNotesFromFirebase() {
       return new Promise((resolve, reject) => {
         db.ref("calendarNotes").once("value", (snapshot) => {
-          const data = snapshot.val();
-          notes = data || {};
+          notes = snapshot.val() || {};
           resolve();
         }, reject);
       });
@@ -157,9 +161,9 @@
     // 한 날짜 메모 저장 또는 삭제
     function saveNoteToFirebase(dateKey, text) {
       if (text) {
-        db.ref("calendarNotes/" + encodeURIComponent(dateKey)).set(text);
+        db.ref("calendarNotes/" + dateKey).set(text);
       } else {
-        db.ref("calendarNotes/" + encodeURIComponent(dateKey)).remove();
+        db.ref("calendarNotes/" + dateKey).remove();
       }
     }
 
@@ -181,27 +185,31 @@
       const firstDay = new Date(year, month, 1).getDay();
       const daysInMonth = getDaysInMonth(year, month);
 
+      // 빈 칸 채우기
       for(let i = 0; i < firstDay; i++) {
         calendarElem.appendChild(document.createElement("div"));
       }
 
+      // 날짜 렌더링
       for(let day = 1; day <= daysInMonth; day++) {
         const dateCell = document.createElement("div");
         dateCell.textContent = day;
         dateCell.classList.add("date-cell");
 
-        const dateKey = new Date(year, month, day).toDateString();
+        const dateObj = new Date(year, month, day);
+        const dateKey = formatDateKey(dateObj);
+
         if(notes[dateKey]) {
           dateCell.classList.add("note");
           dateCell.title = notes[dateKey];
         }
 
-        if(selectedDate && selectedDate.toDateString() === dateKey) {
+        if(selectedDate && formatDateKey(selectedDate) === dateKey) {
           dateCell.classList.add("selected");
         }
 
         dateCell.addEventListener("click", () => {
-          selectedDate = new Date(year, month, day);
+          selectedDate = dateObj;
           renderCalendar(currentYear, currentMonth);
           showNote(selectedDate);
         });
@@ -216,7 +224,7 @@
         return;
       }
       selectedDateElem.textContent = `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
-      const dateKey = date.toDateString();
+      const dateKey = formatDateKey(date);
       noteTextElem.value = notes[dateKey] || "";
       noteContainer.style.display = "block";
     }
@@ -224,7 +232,7 @@
     // 저장 버튼 클릭 시 메모 저장
     saveBtn.addEventListener("click", () => {
       if(!selectedDate) return;
-      const dateKey = selectedDate.toDateString();
+      const dateKey = formatDateKey(selectedDate);
       const val = noteTextElem.value.trim();
 
       if(val) {
@@ -240,7 +248,7 @@
     // 삭제 버튼 클릭 시 메모 삭제
     deleteBtn.addEventListener("click", () => {
       if(!selectedDate) return;
-      const dateKey = selectedDate.toDateString();
+      const dateKey = formatDateKey(selectedDate);
 
       if(confirm("정말로 이 날짜의 메모를 삭제하시겠습니까?")) {
         delete notes[dateKey];
@@ -288,4 +296,4 @@
     init();
   </script>
 </body>
-</html>
+</html
