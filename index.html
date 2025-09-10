@@ -48,7 +48,7 @@
     }
     #note-container {
       margin-top: 20px;
-      display: none; /* 초기에는 숨김 */
+      display: none;
     }
     #note-container textarea {
       width: 100%;
@@ -175,6 +175,7 @@
       monthYearElem.textContent = `${year}년 ${month + 1}월`;
       calendarElem.innerHTML = "";
 
+      // 요일 표시
       WEEK_DAYS.forEach(day => {
         const dayName = document.createElement("div");
         dayName.textContent = day;
@@ -296,4 +297,4 @@
     init();
   </script>
 </body>
-</html
+</html>
