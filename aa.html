@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Firebase 연동 달력 메모장</title>
   <style>
+    /* 스타일은 기존과 동일 */
     body {
       font-family: Arial, sans-serif;
       max-width: 480px;
@@ -48,7 +49,6 @@
     }
     #note-container {
       margin-top: 20px;
-      display: none; /* 초기에는 숨김 */
     }
     #note-container textarea {
       width: 100%;
@@ -72,21 +72,14 @@
       cursor: pointer;
       border-radius: 4px;
       border: none;
-      transition: background-color 0.3s ease;
     }
     #save-btn {
       background-color: #007bff;
       color: white;
     }
-    #save-btn:hover {
-      background-color: #0056b3;
-    }
     #delete-btn {
       background-color: #dc3545;
       color: white;
-    }
-    #delete-btn:hover {
-      background-color: #a71d2a;
     }
   </style>
 
@@ -102,7 +95,7 @@
   </div>
   <div id="calendar"></div>
 
-  <div id="note-container">
+  <div id="note-container" style="display:none;">
     <h2 id="selected-date"></h2>
     <textarea id="note-text" placeholder="메모를 입력하세요..."></textarea>
     <div id="note-buttons">
@@ -128,7 +121,7 @@
     const saveBtn = document.getElementById("save-btn");
     const deleteBtn = document.getElementById("delete-btn");
 
-    // Firebase 설정 (사용자 환경에 맞게 교체하세요)
+    // Firebase 설정 (입력하신 설정)
     const firebaseConfig = {
       apiKey: "AIzaSyBCEHZSZe2wpeHc6WctUcjyUuNS8p3fxqI",
       authDomain: "hwidao-5f9de.firebaseapp.com",
@@ -215,7 +208,7 @@
         noteContainer.style.display = "none";
         return;
       }
-      selectedDateElem.textContent = `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
+      selectedDateElem.textContent = `${date.getFullYear()}년 ${date.getMonth()+1}월 ${date.getDate()}일`;
       const dateKey = date.toDateString();
       noteTextElem.value = notes[dateKey] || "";
       noteContainer.style.display = "block";
@@ -230,11 +223,12 @@
       if(val) {
         notes[dateKey] = val;
         saveNoteToFirebase(dateKey, val);
-        renderCalendar(currentYear, currentMonth);
-        alert("메모가 저장되었습니다.");
       } else {
         alert("메모가 비어있으면 저장할 수 없습니다.");
+        return;
       }
+      renderCalendar(currentYear, currentMonth);
+      alert("메모가 저장되었습니다.");
     });
 
     // 삭제 버튼 클릭 시 메모 삭제
